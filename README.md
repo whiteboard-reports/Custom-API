@@ -1,87 +1,80 @@
-# API Customizada - Documentação
+# API Customizada - Documentação para QA
 
-API REST para gerenciamento de issues e projetos com suporte a múltiplos métodos de autenticação.
+API REST para testes de gráficos e dashboards com dados mockados de issues e projetos.
 
-## Instalação e Execução
+**URL Base:** `https://custom-api-o7rz.onrender.com`
 
-### Execução Local
+---
 
+## 🔐 Autenticação
+
+A API suporta **dois métodos de autenticação** (para rotas protegidas):
+
+### Método 1: Basic Authentication
+- **Username:** `admin`
+- **Password:** `admin123`
+
+### Método 2: Bearer Token
+- **Token:** `wbr-token-2024-xyz`
+
+---
+
+## 📡 Endpoints Disponíveis
+
+### 1. Health Check (Sem Autenticação)
+
+**Endpoint:** `GET /health`
+
+**Descrição:** Verifica se a API está online.
+
+**Autenticação:** ❌ Não requerida
+
+**Exemplo de Request:**
 ```bash
-npm install
-npm start
+GET https://custom-api-o7rz.onrender.com/health
 ```
 
-A API estará disponível em `http://localhost:3000`
-
-### Deploy no Render (Produção)
-
-Esta API está pronta para deploy no Render. Siga os passos:
-
-1. Acesse [render.com](https://render.com) e faça login
-2. Clique em "New +" → "Web Service"
-3. Conecte seu repositório do Bitbucket/GitHub
-4. O Render detectará automaticamente as configurações do `render.yaml`
-5. Clique em "Create Web Service"
-
-**Configurações automáticas (via `render.yaml`):**
-- Build Command: `npm install`
-- Start Command: `npm start`
-- Node Version: 18.20.0 (detectado via `.node-version`)
-
-**Após o deploy:**
-- Sua API estará disponível em: `https://seu-app.onrender.com`
-- Exemplo: `https://seu-app.onrender.com/api/issues`
-
-**Observação:** No plano gratuito, o app hiberna após 15 minutos de inatividade. O primeiro request após hibernação pode demorar ~30 segundos.
-
-## Autenticação
-
-A API suporta dois métodos de autenticação para rotas protegidas:
-
-### 1. Basic Authentication
-
-**Credenciais:**
-- Username: `admin`
-- Password: `admin123`
-
-**Exemplo de uso:**
-```bash
-curl -u admin:admin123 http://localhost:3000/api/issues
+**Resposta (200 OK):**
+```json
+{
+  "status": "ok"
+}
 ```
 
-Ou com header explícito:
+---
+
+### 2. Issues (Com Autenticação)
+
+**Endpoint:** `GET /api/issues`
+
+**Descrição:** Retorna lista de 25 issues para testes de gráficos.
+
+**Autenticação:** ✅ Obrigatória (Basic Auth ou Bearer Token)
+
+**Exemplo de Request (Basic Auth):**
 ```bash
-curl -H "Authorization: Basic YWRtaW46YWRtaW4xMjM=" http://localhost:3000/api/issues
+GET https://custom-api-o7rz.onrender.com/api/issues
+Authorization: Basic YWRtaW46YWRtaW4xMjM=
 ```
 
-### 2. Bearer Token
-
-**Token estático:** `wbr-token-2024-xyz`
-
-**Exemplo de uso:**
+**Exemplo de Request (Bearer Token):**
 ```bash
-curl -H "Authorization: Bearer wbr-token-2024-xyz" http://localhost:3000/api/issues
+GET https://custom-api-o7rz.onrender.com/api/issues
+Authorization: Bearer wbr-token-2024-xyz
 ```
 
-## Endpoints
+**Campos Retornados:**
 
-### `GET /api/issues`
+| Campo | Tipo | Valores Possíveis | Descrição |
+|-------|------|-------------------|-----------|
+| `issueType` | string | Bug, Task, Improvement, Story, Epic, "", null | Tipo da issue |
+| `assignee` | string | Nome da pessoa, "", null | Responsável |
+| `status` | string | Open, Closed, In Progress, In Review, Blocked, "", null | Status atual |
+| `priority` | string | Critical, High, Medium, Low, null | Prioridade |
+| `timeSpent` | number | 0-20, null | Horas gastas |
+| `storyPoints` | number | 1-21, null | Pontos de história |
 
-**Autenticação:** Obrigatória (Basic Auth ou Bearer Token)
-
-**Descrição:** Retorna uma lista de issues/tickets do sistema.
-
-**Campos retornados:**
-- `issueType` (string): Tipo da issue - Bug, Task, Improvement, Story, Epic
-- `assignee` (string): Responsável pela issue
-- `status` (string): Status atual - Open, Closed, In Progress, In Review, Blocked
-- `priority` (string): Prioridade - Critical, High, Medium, Low
-- `timeSpent` (number): Tempo gasto em horas
-- `storyPoints` (number): Pontos de história
-
-**Observações:** Alguns campos podem conter valores vazios (`""`) ou `null`.
-
-**Exemplo de resposta:**
+**Resposta (200 OK):**
 ```json
 [
   {
@@ -108,31 +101,54 @@ curl -H "Authorization: Bearer wbr-token-2024-xyz" http://localhost:3000/api/iss
     "timeSpent": null,
     "storyPoints": 5
   }
+  // ... mais 22 issues
 ]
 ```
 
-**Total de registros:** ~25 issues
+**Resposta (401 Unauthorized) - Sem autenticação:**
+```json
+{
+  "error": "Autenticação necessária"
+}
+```
+
+**Resposta (401 Unauthorized) - Credenciais inválidas:**
+```json
+{
+  "error": "Credenciais inválidas"
+}
+```
+
+**Total de registros:** 25 issues
 
 ---
 
-### `GET /api/public/projects`
+### 3. Projects (Sem Autenticação)
 
-**Autenticação:** Não requerida (rota pública)
+**Endpoint:** `GET /api/public/projects`
 
-**Descrição:** Retorna uma lista de projetos da organização.
+**Descrição:** Retorna lista de 15 projetos para testes de gráficos.
 
-**Campos retornados:**
-- `name` (string): Nome do projeto
-- `category` (string): Categoria - Frontend, Backend, Mobile, Data, Security, Infrastructure, Integration, AI
-- `status` (string): Status atual - Active, Planning, Completed, On Hold
-- `lead` (string): Líder do projeto
-- `budget` (number): Orçamento em dólares
-- `teamSize` (number): Tamanho da equipe
-- `completionRate` (number): Taxa de conclusão em porcentagem (0-100)
+**Autenticação:** ❌ Não requerida (endpoint público)
 
-**Observações:** Alguns campos podem conter valores vazios (`""`) ou `null`.
+**Exemplo de Request:**
+```bash
+GET https://custom-api-o7rz.onrender.com/api/public/projects
+```
 
-**Exemplo de resposta:**
+**Campos Retornados:**
+
+| Campo | Tipo | Valores Possíveis | Descrição |
+|-------|------|-------------------|-----------|
+| `name` | string | Nome do projeto, "", null | Nome do projeto |
+| `category` | string | Frontend, Backend, Mobile, Data, Security, Infrastructure, Integration, AI | Categoria |
+| `status` | string | Active, Planning, Completed, On Hold | Status atual |
+| `lead` | string | Nome da pessoa, "", null | Líder do projeto |
+| `budget` | number | 25000-200000, null | Orçamento em dólares |
+| `teamSize` | number | 2-12, null | Tamanho da equipe |
+| `completionRate` | number | 0-100, null | % de conclusão |
+
+**Resposta (200 OK):**
 ```json
 [
   {
@@ -162,116 +178,196 @@ curl -H "Authorization: Bearer wbr-token-2024-xyz" http://localhost:3000/api/iss
     "teamSize": 4,
     "completionRate": 100
   }
+  // ... mais 12 projetos
 ]
 ```
 
-**Total de registros:** ~15 projetos
+**Total de registros:** 15 projetos
 
 ---
 
-## Exemplos de Uso
+## 🧪 Como Testar
 
-### Testando autenticação com Basic Auth
+### Opção 1: Navegador
+
+**Rota pública (Projects):**
+```
+https://custom-api-o7rz.onrender.com/api/public/projects
+```
+Cole no navegador e veja o JSON.
+
+**Rota protegida (Issues):**
+O navegador pedirá usuário e senha:
+- Username: `admin`
+- Password: `admin123`
+
+---
+
+### Opção 2: Postman/Insomnia
+
+**1. Health Check:**
+```
+GET https://custom-api-o7rz.onrender.com/health
+```
+
+**2. Issues com Basic Auth:**
+```
+GET https://custom-api-o7rz.onrender.com/api/issues
+
+Authorization:
+  Type: Basic Auth
+  Username: admin
+  Password: admin123
+```
+
+**3. Issues com Bearer Token:**
+```
+GET https://custom-api-o7rz.onrender.com/api/issues
+
+Authorization:
+  Type: Bearer Token
+  Token: wbr-token-2024-xyz
+```
+
+**4. Projects (sem auth):**
+```
+GET https://custom-api-o7rz.onrender.com/api/public/projects
+```
+
+---
+
+### Opção 3: cURL (Terminal)
+
 ```bash
-# Sucesso (200)
-curl -u admin:admin123 http://localhost:3000/api/issues
+# Health check
+curl https://custom-api-o7rz.onrender.com/health
 
-# Falha - credenciais inválidas (401)
-curl -u admin:wrongpassword http://localhost:3000/api/issues
+# Issues com Basic Auth
+curl -u admin:admin123 https://custom-api-o7rz.onrender.com/api/issues
 
-# Falha - sem autenticação (401)
-curl http://localhost:3000/api/issues
+# Issues com Bearer Token
+curl -H "Authorization: Bearer wbr-token-2024-xyz" https://custom-api-o7rz.onrender.com/api/issues
+
+# Projects (sem auth)
+curl https://custom-api-o7rz.onrender.com/api/public/projects
+
+# Testar falha de autenticação (deve retornar 401)
+curl https://custom-api-o7rz.onrender.com/api/issues
 ```
 
-### Testando autenticação com Bearer Token
-```bash
-# Sucesso (200)
-curl -H "Authorization: Bearer wbr-token-2024-xyz" http://localhost:3000/api/issues
+---
 
-# Falha - token inválido (401)
-curl -H "Authorization: Bearer invalid-token" http://localhost:3000/api/issues
+### Opção 4: JavaScript/Fetch
+
+```javascript
+// Health check
+fetch('https://custom-api-o7rz.onrender.com/health')
+  .then(res => res.json())
+  .then(data => console.log(data));
+
+// Issues com Basic Auth
+fetch('https://custom-api-o7rz.onrender.com/api/issues', {
+  headers: {
+    'Authorization': 'Basic ' + btoa('admin:admin123')
+  }
+})
+  .then(res => res.json())
+  .then(data => console.log(data));
+
+// Issues com Bearer Token
+fetch('https://custom-api-o7rz.onrender.com/api/issues', {
+  headers: {
+    'Authorization': 'Bearer wbr-token-2024-xyz'
+  }
+})
+  .then(res => res.json())
+  .then(data => console.log(data));
+
+// Projects (sem auth)
+fetch('https://custom-api-o7rz.onrender.com/api/public/projects')
+  .then(res => res.json())
+  .then(data => console.log(data));
 ```
 
-### Testando rota pública
-```bash
-# Sucesso sem autenticação (200)
-curl http://localhost:3000/api/public/projects
+---
+
+## ⚠️ Observações Importantes
+
+### Valores Nulos/Vazios
+- Alguns campos contêm valores vazios (`""`) ou `null` **propositalmente**
+- Isso simula dados reais e ajuda a testar edge cases
+
+### Hibernação (Plano Free)
+- A API hiberna após 15 minutos sem uso
+- **Primeiro request após hibernação demora ~30 segundos**
+- Requests subsequentes são rápidos
+
+### CORS
+- A API aceita requests de qualquer origem
+- Pode ser usada diretamente em aplicações frontend
+
+---
+
+## 📊 Casos de Uso para Testes
+
+### Para Gráficos de Pizza (Pie Charts)
+```javascript
+// Distribuição por status
+GET /api/issues
+Agrupe por: status
+Valores: Open, Closed, In Progress, In Review, Blocked
+
+// Distribuição por prioridade
+GET /api/issues
+Agrupe por: priority
+Valores: Critical, High, Medium, Low
+
+// Distribuição por tipo
+GET /api/issues
+Agrupe por: issueType
+Valores: Bug, Task, Improvement, Story, Epic
+
+// Projetos por categoria
+GET /api/public/projects
+Agrupe por: category
+Valores: Frontend, Backend, Mobile, Data, etc.
+
+// Projetos por status
+GET /api/public/projects
+Agrupe por: status
+Valores: Active, Planning, Completed, On Hold
 ```
 
-## Respostas de Erro
+### Para Gráficos de Barra
+```javascript
+// Story points por assignee
+GET /api/issues
+X: assignee, Y: sum(storyPoints)
 
-### 401 Unauthorized
+// Budget por categoria de projeto
+GET /api/public/projects
+X: category, Y: sum(budget)
 
-**Sem header de autenticação:**
-```json
-{
-  "error": "Autenticação necessária"
-}
+// Completion rate por projeto
+GET /api/public/projects
+X: name, Y: completionRate
 ```
 
-**Credenciais Basic Auth inválidas:**
-```json
-{
-  "error": "Credenciais inválidas"
-}
-```
+---
 
-**Bearer Token inválido:**
-```json
-{
-  "error": "Token inválido"
-}
-```
+## 🔗 Links Rápidos
 
-**Método de autenticação inválido:**
-```json
-{
-  "error": "Método de autenticação inválido"
-}
-```
+- **Health Check:** https://custom-api-o7rz.onrender.com/health
+- **Issues:** https://custom-api-o7rz.onrender.com/api/issues
+- **Projects:** https://custom-api-o7rz.onrender.com/api/public/projects
 
-## Estrutura do Projeto
+---
 
-```
-api-customizada/
-├── src/
-│   ├── config/
-│   │   └── auth.js           # Configurações de autenticação
-│   ├── data/
-│   │   ├── issues.js         # Dataset de issues
-│   │   └── projects.js       # Dataset de projetos
-│   ├── middleware/
-│   │   └── authenticate.js   # Middleware de autenticação
-│   ├── routes/
-│   │   ├── health.js         # Rota de health check
-│   │   ├── issues.js         # Rota de issues
-│   │   └── projects.js       # Rota de projetos
-│   ├── app.js                # Configuração do Express
-│   └── server.js             # Inicialização do servidor
-├── index.js                  # Ponto de entrada
-├── package.json              # Dependências e scripts
-├── README.md                 # Esta documentação
-└── node_modules/             # Dependências instaladas
-```
+## 📞 Suporte
 
-### Descrição dos Diretórios
+Problemas com a API? Entre em contato com o time de desenvolvimento.
 
-- **src/config/** - Configurações da aplicação (credenciais, tokens)
-- **src/data/** - Datasets mockados para testes
-- **src/middleware/** - Middlewares customizados (autenticação, validação, etc.)
-- **src/routes/** - Definição de rotas/endpoints da API
-- **src/app.js** - Configuração central do Express
-- **src/server.js** - Inicialização do servidor HTTP
-
-## Tecnologias
-
-- Node.js
-- Express.js
-- Autenticação Basic Auth e Bearer Token
-
-## Notas
-
-- A API utiliza dados mockados (não há persistência em banco de dados)
-- O Bearer Token é estático e definido no código
-- Alguns registros contém valores vazios ou `null` propositalmente para simular dados reais
-- A rota `/health` não requer autenticação e pode ser usada para verificar se a API está rodando
+**Credenciais para testes:**
+- Username: `admin`
+- Password: `admin123`
+- Token: `wbr-token-2024-xyz`
