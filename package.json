@@ -1,10 +1,13 @@
 {
   "name": "poc-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "API REST para gerenciamento de issues e projetos com autenticação Basic Auth e Bearer Token",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "dependencies": {
     "express": "^4.21.2"
