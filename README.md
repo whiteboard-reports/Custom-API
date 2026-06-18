@@ -186,8 +186,6 @@ GET https://custom-api-o7rz.onrender.com/api/public/projects
 
 ---
 
----
-
 ## ⚠️ Observações Importantes
 
 ### Valores Nulos/Vazios
