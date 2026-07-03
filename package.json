@@ -4,7 +4,8 @@
   "description": "API REST para gerenciamento de issues e projetos com autenticação Basic Auth e Bearer Token",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "node --test"
   },
   "engines": {
     "node": ">=18.0.0"
